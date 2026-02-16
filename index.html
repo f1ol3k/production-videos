@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Video Instructions</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="icon.png">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+       import React, { useState, useRef, useEffect } from 'react';
+import { Play, Pause, ChevronLeft, ChevronRight, Plus, Trash2, Users, FolderPlus, Upload, LogOut, Save, X } from 'lucide-react';
+
+const ProductionVideoApp = () => {
+  const [users, setUsers] = useState([
+    { username: 'operator1', password: 'pass123', role: 'operator' },
+    { username: 'admin', password: 'admin123', role: 'admin' }
+  ]);
+  
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+  
+  const [productionLines, setProductionLines] = useState([
+    {
+      id: 1,
+      name: 'Line 1',
+      instructions: [
+        {
+          id: 1,
+          name: 'Assembly Process A',
+          steps: [
+            { id: 1, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', name: 'Step 1' },
+            { id: 2, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', name: 'Step 2' },
+            { id: 3, videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', name: 'Step 3' }
+          ]
+        }
+      ]
+    }
+  ]);
+  
+  const [selectedLine, setSelectedLine] = useState(null);
+  const [selectedInstruction, setSelectedInstruction] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(true);
+  
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showUserCreation, setShowUserCreation] = useState(false);
+  const [showLineCreation, setShowLineCreation] = useState(false);
+  const [showInstructionCreation, setShowInstructionCreation] = useState(false);
+  
+  const [newUser, setNewUser] = useState({ username: '', password: '' });
+  const [newLineName, setNewLineName] = useState('');
+  const [newInstruction, setNewInstruction] = useState({ name: '', stepCount: 3, steps: [] });
+  const [editingLine, setEditingLine] = useState(null);
+  
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed]);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const user = users.find(u => u.username === loginForm.username && u.password === loginForm.password);
+    if (user) {
+      setCurrentUser(user);
+      setLoginError('');
+      setLoginForm({ username: '', password: '' });
+    } else {
+      setLoginError('Invalid credentials');
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setSelectedLine(null);
+    setSelectedInstruction(null);
+    setShowAdminPanel(false);
+  };
+
+  const handleStepChange = (direction) => {
+    if (!selectedInstruction) return;
+    const newStep = currentStep + direction;
+    if (newStep >= 0 && newStep < selectedInstruction.steps.length) {
+      setCurrentStep(newStep);
+      setIsPlaying(true);
+    }
+  };
+
+  const createUser = () => {
+    if (newUser.username && newUser.password) {
+      setUsers([...users, { ...newUser, role: 'operator' }]);
+      setNewUser({ username: '', password: '' });
+      setShowUserCreation(false);
+    }
+  };
+
+  const createLine = () => {
+    if (newLineName) {
+      const newLine = {
+        id: Date.now(),
+        name: newLineName,
+        instructions: []
+      };
+      setProductionLines([...productionLines, newLine]);
+      setNewLineName('');
+      setShowLineCreation(false);
+    }
+  };
+
+  const startInstructionCreation = (lineId) => {
+    setEditingLine(lineId);
+    setNewInstruction({ name: '', stepCount: 3, steps: Array(3).fill(null).map((_, i) => ({ id: i + 1, videoUrl: '', name: `Step ${i + 1}` })) });
+    setShowInstructionCreation(true);
+  };
+
+  const updateStepCount = (count) => {
+    const clampedCount = Math.min(Math.max(count, 1), 25);
+    const current = newInstruction.steps.length;
+    if (clampedCount > current) {
+      const newSteps = [...newInstruction.steps];
+      for (let i = current; i < clampedCount; i++) {
+        newSteps.push({ id: i + 1, videoUrl: '', name: `Step ${i + 1}` });
+      }
+      setNewInstruction({ ...newInstruction, stepCount: clampedCount, steps: newSteps });
+    } else if (clampedCount < current) {
+      setNewInstruction({ ...newInstruction, stepCount: clampedCount, steps: newInstruction.steps.slice(0, clampedCount) });
+    }
+  };
+
+  const handleVideoUpload = (stepId, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const videoUrl = URL.createObjectURL(file);
+      const updatedSteps = newInstruction.steps.map(step => 
+        step.id === stepId ? { ...step, videoUrl } : step
+      );
+      setNewInstruction({ ...newInstruction, steps: updatedSteps });
+    }
+  };
+
+  const deleteEmptySteps = () => {
+    const filledSteps = newInstruction.steps.filter(step => step.videoUrl);
+    setNewInstruction({ ...newInstruction, steps: filledSteps, stepCount: filledSteps.length });
+  };
+
+  const publishInstruction = () => {
+    if (!newInstruction.name || newInstruction.steps.filter(s => s.videoUrl).length === 0) {
+      alert('Please add instruction name and at least one video');
+      return;
+    }
+    
+    const filledSteps = newInstruction.steps.filter(step => step.videoUrl);
+    const instruction = {
+      id: Date.now(),
+      name: newInstruction.name,
+      steps: filledSteps
+    };
+    
+    setProductionLines(productionLines.map(line => 
+      line.id === editingLine 
+        ? { ...line, instructions: [...line.instructions, instruction] }
+        : line
+    ));
+    
+    setShowInstructionCreation(false);
+    setNewInstruction({ name: '', stepCount: 3, steps: [] });
+    setEditingLine(null);
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Production Videos</h1>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+              <input
+                type="text"
+                value={loginForm.username}
+                onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin(e)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
+            <button onClick={handleLogin} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+              Login
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-4 text-center">Demo: operator1/pass123 or admin/admin123</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showAdminPanel) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+              <div className="flex gap-2">
+                <button onClick={() => setShowAdminPanel(false)} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                  Back to Viewer
+                </button>
+                <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">
+                  <LogOut size={16} /> Logout
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <button onClick={() => setShowUserCreation(true)} className="p-6 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex flex-col items-center gap-2">
+                <Users size={32} className="text-blue-600" />
+                <span className="font-semibold">Create User</span>
+              </button>
+              <button onClick={() => setShowLineCreation(true)} className="p-6 bg-green-50 rounded-lg hover:bg-green-100 transition flex flex-col items-center gap-2">
+                <FolderPlus size={32} className="text-green-600" />
+                <span className="font-semibold">Create Production Line</span>
+              </button>
+            </div>
+
+            {showUserCreation && (
+              <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                <h3 className="font-semibold mb-3">Create New User</h3>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Username"
+                    value={newUser.username}
+                    onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={createUser} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      Create
+                    </button>
+                    <button onClick={() => setShowUserCreation(false)} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showLineCreation && (
+              <div className="bg-green-50 p-4 rounded-lg mb-4">
+                <h3 className="font-semibold mb-3">Create New Production Line</h3>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Line Name"
+                    value={newLineName}
+                    onChange={(e) => setNewLineName(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={createLine} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                      Create
+                    </button>
+                    <button onClick={() => setShowLineCreation(false)} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Production Lines</h2>
+              {productionLines.map(line => (
+                <div key={line.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold">{line.name}</h3>
+                    <button 
+                      onClick={() => startInstructionCreation(line.id)}
+                      className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1 text-sm"
+                    >
+                      <Plus size={16} /> Add Instruction
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {line.instructions.map(inst => (
+                      <div key={inst.id} className="bg-gray-50 p-3 rounded">
+                        <p className="font-medium">{inst.name}</p>
+                        <p className="text-sm text-gray-600">{inst.steps.length} steps</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {showInstructionCreation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full my-8">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Create New Instruction</h2>
+                <button onClick={() => setShowInstructionCreation(false)} className="text-gray-500 hover:text-gray-700">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Instruction Name</label>
+                  <input
+                    type="text"
+                    value={newInstruction.name}
+                    onChange={(e) => setNewInstruction({ ...newInstruction, name: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="e.g., Assembly Process B"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Number of Steps (Max 25)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="25"
+                    value={newInstruction.stepCount}
+                    onChange={(e) => updateStepCount(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                  <div className="flex justify-between items-center sticky top-0 bg-white py-2 z-10">
+                    <h3 className="font-semibold">Steps</h3>
+                    <button onClick={deleteEmptySteps} className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1">
+                      <Trash2 size={14} /> Delete Empty Steps
+                    </button>
+                  </div>
+                  
+                  {newInstruction.steps.map((step, index) => (
+                    <div key={step.id} className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Step {index + 1}</h4>
+                        {step.videoUrl && <span className="text-green-600 text-sm">✓ Video added</span>}
+                      </div>
+                      <label className="block">
+                        <div className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer text-center flex items-center justify-center gap-2">
+                          <Upload size={16} />
+                          {step.videoUrl ? 'Change Video' : 'Upload Video'}
+                        </div>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => handleVideoUpload(step.id, e)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <button onClick={publishInstruction} className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2">
+                    <Save size={16} /> Publish Instruction
+                  </button>
+                  <button onClick={() => setShowInstructionCreation(false)} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (selectedInstruction) {
+    const currentStepData = selectedInstruction.steps[currentStep];
+    
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col">
+        <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold">{selectedInstruction.name}</h2>
+            <p className="text-sm text-gray-400">Step {currentStep + 1} of {selectedInstruction.steps.length}</p>
+          </div>
+          <button onClick={() => { setSelectedInstruction(null); setCurrentStep(0); }} className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">
+            Back
+          </button>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-4">
+          <video
+            ref={videoRef}
+            src={currentStepData.videoUrl}
+            className="max-w-full max-h-full rounded-lg shadow-2xl"
+            loop
+            autoPlay={isPlaying}
+            onEnded={() => setIsPlaying(true)}
+          />
+        </div>
+
+        <div className="bg-gray-800 p-6 space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => handleStepChange(-1)}
+              disabled={currentStep === 0}
+              className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="p-4 bg-green-600 text-white rounded-full hover:bg-green-700"
+            >
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            </button>
+
+            {currentStep === selectedInstruction.steps.length - 1 ? (
+              <button
+                onClick={() => { setSelectedInstruction(null); setCurrentStep(0); }}
+                className="px-6 py-4 bg-green-600 text-white rounded-full hover:bg-green-700 font-semibold"
+              >
+                Finish Lesson
+              </button>
+            ) : (
+              <button
+                onClick={() => handleStepChange(1)}
+                className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center justify-center gap-4">
+            <label className="text-white font-medium">Playback Speed:</label>
+            <select
+              value={playbackSpeed}
+              onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600"
+            >
+              <option value="0.25">0.25x</option>
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1">1x (Normal)</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2x</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Production Video Instructions</h1>
+              <p className="text-gray-600">Welcome, {currentUser.username} ({currentUser.role})</p>
+            </div>
+            <div className="flex gap-2">
+              {currentUser.role === 'admin' && (
+                <button onClick={() => setShowAdminPanel(true)} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                  Admin Panel
+                </button>
+              )}
+              <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">
+                <LogOut size={16} /> Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {!selectedLine ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {productionLines.map(line => (
+              <button
+                key={line.id}
+                onClick={() => setSelectedLine(line)}
+                className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition transform hover:scale-105"
+              >
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{line.name}</h3>
+                <p className="text-gray-600">{line.instructions.length} instruction(s)</p>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <button onClick={() => setSelectedLine(null)} className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+              ← Back to Lines
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {selectedLine.instructions.map(instruction => (
+                <button
+                  key={instruction.id}
+                  onClick={() => { setSelectedInstruction(instruction); setCurrentStep(0); }}
+                  className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition transform hover:scale-105"
+                >
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{instruction.name}</h3>
+                  <p className="text-gray-600">{instruction.steps.length} steps</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<ProductionVideoApp />);
+    </script>
+</body>
+</html>
