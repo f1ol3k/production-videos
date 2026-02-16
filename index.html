@@ -8,7 +8,6 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
     <div id="root"></div>
@@ -19,18 +18,19 @@ const { useState, useRef, useEffect } = React;
 // Icon wrapper components
 const IconWrapper = ({ icon: Icon, ...props }) => React.createElement(Icon, props);
 
-const Play = (props) => React.createElement(IconWrapper, { icon: lucide.Play, ...props });
-const Pause = (props) => React.createElement(IconWrapper, { icon: lucide.Pause, ...props });
-const ChevronLeft = (props) => React.createElement(IconWrapper, { icon: lucide.ChevronLeft, ...props });
-const ChevronRight = (props) => React.createElement(IconWrapper, { icon: lucide.ChevronRight, ...props });
-const Plus = (props) => React.createElement(IconWrapper, { icon: lucide.Plus, ...props });
-const Trash2 = (props) => React.createElement(IconWrapper, { icon: lucide.Trash2, ...props });
-const Users = (props) => React.createElement(IconWrapper, { icon: lucide.Users, ...props });
-const FolderPlus = (props) => React.createElement(IconWrapper, { icon: lucide.FolderPlus, ...props });
-const Upload = (props) => React.createElement(IconWrapper, { icon: lucide.Upload, ...props });
-const LogOut = (props) => React.createElement(IconWrapper, { icon: lucide.LogOut, ...props });
-const Save = (props) => React.createElement(IconWrapper, { icon: lucide.Save, ...props });
-const X = (props) => React.createElement(IconWrapper, { icon: lucide.X, ...props });
+// Simple text/emoji icons
+const Play = ({ size }) => <span style={{fontSize: size}}>▶️</span>;
+const Pause = ({ size }) => <span style={{fontSize: size}}>⏸️</span>;
+const ChevronLeft = ({ size }) => <span style={{fontSize: size}}>◀️</span>;
+const ChevronRight = ({ size }) => <span style={{fontSize: size}}>▶️</span>;
+const Plus = ({ size }) => <span style={{fontSize: size}}>➕</span>;
+const Trash2 = ({ size }) => <span style={{fontSize: size}}>🗑️</span>;
+const Users = ({ size }) => <span style={{fontSize: size}}>👥</span>;
+const FolderPlus = ({ size }) => <span style={{fontSize: size}}>📁</span>;
+const Upload = ({ size }) => <span style={{fontSize: size}}>📤</span>;
+const LogOut = ({ size }) => <span style={{fontSize: size}}>🚪</span>;
+const Save = ({ size }) => <span style={{fontSize: size}}>💾</span>;
+const X = ({ size }) => <span style={{fontSize: size}}>❌</span>;
 
 const ProductionVideoApp = () => {
   const [users, setUsers] = useState([
