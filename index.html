@@ -13,19 +13,21 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-const { useState, useRef, useEffect } = React;
-const Play = lucide.Play;
-const Pause = lucide.Pause;
-const ChevronLeft = lucide.ChevronLeft;
-const ChevronRight = lucide.ChevronRight;
-const Plus = lucide.Plus;
-const Trash2 = lucide.Trash2;
-const Users = lucide.Users;
-const FolderPlus = lucide.FolderPlus;
-const Upload = lucide.Upload;
-const LogOut = lucide.LogOut;
-const Save = lucide.Save;
-const X = lucide.X;
+// Icon wrapper components
+const IconWrapper = ({ icon: Icon, ...props }) => React.createElement(Icon, props);
+
+const Play = (props) => React.createElement(IconWrapper, { icon: lucide.Play, ...props });
+const Pause = (props) => React.createElement(IconWrapper, { icon: lucide.Pause, ...props });
+const ChevronLeft = (props) => React.createElement(IconWrapper, { icon: lucide.ChevronLeft, ...props });
+const ChevronRight = (props) => React.createElement(IconWrapper, { icon: lucide.ChevronRight, ...props });
+const Plus = (props) => React.createElement(IconWrapper, { icon: lucide.Plus, ...props });
+const Trash2 = (props) => React.createElement(IconWrapper, { icon: lucide.Trash2, ...props });
+const Users = (props) => React.createElement(IconWrapper, { icon: lucide.Users, ...props });
+const FolderPlus = (props) => React.createElement(IconWrapper, { icon: lucide.FolderPlus, ...props });
+const Upload = (props) => React.createElement(IconWrapper, { icon: lucide.Upload, ...props });
+const LogOut = (props) => React.createElement(IconWrapper, { icon: lucide.LogOut, ...props });
+const Save = (props) => React.createElement(IconWrapper, { icon: lucide.Save, ...props });
+const X = (props) => React.createElement(IconWrapper, { icon: lucide.X, ...props });
 
 const ProductionVideoApp = () => {
   const [users, setUsers] = useState([
