@@ -8,15 +8,13 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <link rel="apple-touch-icon" href="icon.png">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-       import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, Plus, Trash2, Users, FolderPlus, Upload, LogOut, Save, X } from 'lucide-react';
+const { useState, useRef, useEffect } = React;
+const { Play, Pause, ChevronLeft, ChevronRight, Plus, Trash2, Users, FolderPlus, Upload, LogOut, Save, X } = lucide;
 
 const ProductionVideoApp = () => {
   const [users, setUsers] = useState([
@@ -215,6 +213,9 @@ const ProductionVideoApp = () => {
     );
   }
 
+  // Rest of the component code remains exactly the same...
+  // (Copy everything from the artifact from the "if (showAdminPanel)" line onwards)
+  
   if (showAdminPanel) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -544,7 +545,7 @@ const ProductionVideoApp = () => {
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ProductionVideoApp />);
+root.render(React.createElement(ProductionVideoApp));
     </script>
 </body>
 </html>
