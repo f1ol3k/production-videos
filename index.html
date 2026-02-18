@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instrukcje</title>
+    <title>Instrukcje Wideo Produkcyjne</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -15,24 +15,79 @@
 
 const { useState, useRef, useEffect } = React;
 
-// Simple text/emoji icons
-const Play = ({ size }) => <span style={{fontSize: size}}>▶️</span>;
-const Pause = ({ size }) => <span style={{fontSize: size}}>⏸️</span>;
-const ChevronLeft = ({ size }) => <span style={{fontSize: size}}>◀️</span>;
-const ChevronRight = ({ size }) => <span style={{fontSize: size}}>▶️</span>;
-const Plus = ({ size }) => <span style={{fontSize: size}}>➕</span>;
-const Trash2 = ({ size }) => <span style={{fontSize: size}}>🗑️</span>;
-const Users = ({ size }) => <span style={{fontSize: size}}>👥</span>;
-const FolderPlus = ({ size }) => <span style={{fontSize: size}}>📁</span>;
-const Upload = ({ size }) => <span style={{fontSize: size}}>📤</span>;
-const LogOut = ({ size }) => <span style={{fontSize: size}}>🚪</span>;
-const Save = ({ size }) => <span style={{fontSize: size}}>💾</span>;
-const X = ({ size }) => <span style={{fontSize: size}}>❌</span>;
+const Play = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '▶️');
+const Pause = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '⏸️');
+const ChevronLeft = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '◀️');
+const ChevronRight = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '▶️');
+const Plus = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '➕');
+const Trash2 = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '🗑️');
+const Users = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '👥');
+const FolderPlus = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '📁');
+const Upload = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '📤');
+const LogOut = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '🚪');
+const Save = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '💾');
+const X = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '❌');
+const FileText = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '📄');
+const Star = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '⭐');
+const CheckCircle = ({ size }) => React.createElement('span', {style: {fontSize: size}}, '✅');
 
 const ProductionVideoApp = () => {
   const [users, setUsers] = useState([
-    { username: 'operator1', password: 'pass123', role: 'operator' },
-    { username: 'admin', password: 'admin123', role: 'admin' }
+    { 
+      username: 'operator1', 
+      password: 'pass123', 
+      role: 'operator',
+      fullName: 'Jan Kowalski',
+      skills: {
+        montaz: 7,
+        jakosc: 8,
+        bezpieczenstwo: 9,
+        szybkosc: 6,
+        dokladnosc: 8
+      }
+    },
+    { 
+      username: 'operator2', 
+      password: 'pass123', 
+      role: 'operator',
+      fullName: 'Anna Nowak',
+      skills: {
+        montaz: 9,
+        jakosc: 9,
+        bezpieczenstwo: 10,
+        szybkosc: 8,
+        dokladnosc: 9
+      }
+    },
+    { 
+      username: 'operator3', 
+      password: 'pass123', 
+      role: 'operator',
+      fullName: 'Piotr Wiśniewski',
+      skills: {
+        montaz: 5,
+        jakosc: 6,
+        bezpieczenstwo: 7,
+        szybkosc: 7,
+        dokladnosc: 6
+      }
+    },
+    { username: 'admin', password: 'admin123', role: 'admin', fullName: 'Administrator' }
+  ]);
+  
+  const [documents, setDocuments] = useState([
+    {
+      id: 1,
+      name: 'Szkolenie BHP 2024',
+      description: 'Podstawowe szkolenie z bezpieczeństwa i higieny pracy',
+      signatures: ['operator1', 'operator2']
+    },
+    {
+      id: 2,
+      name: 'Instrukcja obsługi maszyn',
+      description: 'Szkolenie z obsługi maszyn produkcyjnych',
+      signatures: ['operator2']
+    }
   ]);
   
   const [currentUser, setCurrentUser] = useState(null);
@@ -67,10 +122,15 @@ const ProductionVideoApp = () => {
   const [showUserCreation, setShowUserCreation] = useState(false);
   const [showLineCreation, setShowLineCreation] = useState(false);
   const [showInstructionCreation, setShowInstructionCreation] = useState(false);
+  const [showOperatorManagement, setShowOperatorManagement] = useState(false);
+  const [showDocumentManagement, setShowDocumentManagement] = useState(false);
+  const [selectedOperator, setSelectedOperator] = useState(null);
+  const [showDocumentCreation, setShowDocumentCreation] = useState(false);
   
-  const [newUser, setNewUser] = useState({ username: '', password: '' });
+  const [newUser, setNewUser] = useState({ username: '', password: '', fullName: '' });
   const [newLineName, setNewLineName] = useState('');
   const [newInstruction, setNewInstruction] = useState({ name: '', stepCount: 3, steps: [] });
+  const [newDocument, setNewDocument] = useState({ name: '', description: '' });
   const [editingLine, setEditingLine] = useState(null);
   
   const videoRef = useRef(null);
@@ -98,6 +158,8 @@ const ProductionVideoApp = () => {
     setSelectedLine(null);
     setSelectedInstruction(null);
     setShowAdminPanel(false);
+    setShowOperatorManagement(false);
+    setShowDocumentManagement(false);
   };
 
   const handleStepChange = (direction) => {
@@ -110,11 +172,29 @@ const ProductionVideoApp = () => {
   };
 
   const createUser = () => {
-    if (newUser.username && newUser.password) {
-      setUsers([...users, { ...newUser, role: 'operator' }]);
-      setNewUser({ username: '', password: '' });
+    if (newUser.username && newUser.password && newUser.fullName) {
+      setUsers([...users, { 
+        ...newUser, 
+        role: 'operator',
+        skills: {
+          montaz: 5,
+          jakosc: 5,
+          bezpieczenstwo: 5,
+          szybkosc: 5,
+          dokladnosc: 5
+        }
+      }]);
+      setNewUser({ username: '', password: '', fullName: '' });
       setShowUserCreation(false);
     }
+  };
+
+  const updateOperatorSkills = (username, skill, value) => {
+    setUsers(users.map(user => 
+      user.username === username && user.role === 'operator'
+        ? { ...user, skills: { ...user.skills, [skill]: value } }
+        : user
+    ));
   };
 
   const createLine = () => {
@@ -190,6 +270,36 @@ const ProductionVideoApp = () => {
     setEditingLine(null);
   };
 
+  const createDocument = () => {
+    if (newDocument.name && newDocument.description) {
+      const doc = {
+        id: Date.now(),
+        name: newDocument.name,
+        description: newDocument.description,
+        signatures: []
+      };
+      setDocuments([...documents, doc]);
+      setNewDocument({ name: '', description: '' });
+      setShowDocumentCreation(false);
+    }
+  };
+
+  const signDocument = (docId) => {
+    setDocuments(documents.map(doc => 
+      doc.id === docId && !doc.signatures.includes(currentUser.username)
+        ? { ...doc, signatures: [...doc.signatures, currentUser.username] }
+        : doc
+    ));
+  };
+
+  const skillCategories = {
+    montaz: 'Montaż',
+    jakosc: 'Kontrola jakości',
+    bezpieczenstwo: 'Bezpieczeństwo',
+    szybkosc: 'Szybkość pracy',
+    dokladnosc: 'Dokładność'
+  };
+
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -226,6 +336,277 @@ const ProductionVideoApp = () => {
     );
   }
 
+  if (currentUser.role === 'operator' && !selectedLine && !selectedInstruction) {
+    const unsignedDocs = documents.filter(doc => !doc.signatures.includes(currentUser.username));
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">Instrukcje wideo produkcyjne</h1>
+                <p className="text-gray-600">Witaj, {currentUser.fullName} ({currentUser.username})</p>
+              </div>
+              <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">
+                <LogOut size={16} /> Wyloguj
+              </button>
+            </div>
+          </div>
+
+          {unsignedDocs.length > 0 && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <h2 className="text-lg font-semibold text-yellow-800 mb-3">📋 Dokumenty do podpisania ({unsignedDocs.length})</h2>
+              <div className="space-y-2">
+                {unsignedDocs.map(doc => (
+                  <div key={doc.id} className="bg-white p-4 rounded-lg flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold">{doc.name}</h3>
+                      <p className="text-sm text-gray-600">{doc.description}</p>
+                    </div>
+                    <button 
+                      onClick={() => signDocument(doc.id)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                    >
+                      <CheckCircle size={16} /> Podpisz
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <h2 className="text-2xl font-bold mb-4">Linie produkcyjne</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {productionLines.map(line => (
+              <button
+                key={line.id}
+                onClick={() => setSelectedLine(line)}
+                className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition transform hover:scale-105"
+              >
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{line.name}</h3>
+                <p className="text-gray-600">{line.instructions.length} instrukcji</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showOperatorManagement && selectedOperator) {
+    const operator = users.find(u => u.username === selectedOperator);
+    const signedDocs = documents.filter(doc => doc.signatures.includes(selectedOperator));
+    
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <button 
+              onClick={() => setSelectedOperator(null)} 
+              className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              ← Powrót do listy
+            </button>
+            
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-800">{operator.fullName}</h1>
+              <p className="text-gray-600">@{operator.username}</p>
+            </div>
+
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Umiejętności operatora</h2>
+              <div className="space-y-4">
+                {Object.keys(skillCategories).map(skill => (
+                  <div key={skill}>
+                    <div className="flex justify-between mb-2">
+                      <span className="font-medium">{skillCategories[skill]}</span>
+                      <span className="font-bold text-blue-600">{operator.skills[skill]}/10</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={operator.skills[skill]}
+                      onChange={(e) => updateOperatorSkills(selectedOperator, skill, parseInt(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Podpisane dokumenty ({signedDocs.length})</h2>
+              <div className="space-y-2">
+                {signedDocs.length > 0 ? (
+                  signedDocs.map(doc => (
+                    <div key={doc.id} className="bg-green-50 p-3 rounded-lg flex items-center gap-2">
+                      <CheckCircle size={16} />
+                      <div>
+                        <p className="font-medium">{doc.name}</p>
+                        <p className="text-sm text-gray-600">{doc.description}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500">Brak podpisanych dokumentów</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showOperatorManagement) {
+    const operators = users.filter(u => u.role === 'operator');
+    
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Zarządzanie operatorami</h1>
+              <button 
+                onClick={() => setShowOperatorManagement(false)} 
+                className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+              >
+                Powrót do panelu
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {operators.map(operator => {
+                const avgSkill = Math.round(Object.values(operator.skills).reduce((a, b) => a + b, 0) / 5);
+                const signedCount = documents.filter(doc => doc.signatures.includes(operator.username)).length;
+                
+                return (
+                  <button
+                    key={operator.username}
+                    onClick={() => setSelectedOperator(operator.username)}
+                    className="bg-white border-2 border-gray-200 p-6 rounded-lg hover:border-blue-500 transition text-left"
+                  >
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{operator.fullName}</h3>
+                    <p className="text-sm text-gray-600 mb-3">@{operator.username}</p>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Star size={16} />
+                      <span className="text-sm">Średnia ocena: {avgSkill}/10</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle size={16} />
+                      <span className="text-sm">Podpisane dokumenty: {signedCount}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showDocumentManagement) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Zarządzanie dokumentami</h1>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setShowDocumentCreation(true)} 
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                >
+                  <Plus size={16} /> Nowy dokument
+                </button>
+                <button 
+                  onClick={() => setShowDocumentManagement(false)} 
+                  className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  Powrót do panelu
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {documents.map(doc => (
+                <div key={doc.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="text-lg font-semibold">{doc.name}</h3>
+                      <p className="text-sm text-gray-600">{doc.description}</p>
+                    </div>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                      {doc.signatures.length} podpisów
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {doc.signatures.map(username => {
+                      const user = users.find(u => u.username === username);
+                      return (
+                        <span key={username} className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                          ✓ {user?.fullName || username}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {showDocumentCreation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h2 className="text-xl font-bold mb-4">Nowy dokument</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nazwa dokumentu</label>
+                  <input
+                    type="text"
+                    value={newDocument.name}
+                    onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="np. Szkolenie BHP 2025"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Opis</label>
+                  <textarea
+                    value={newDocument.description}
+                    onChange={(e) => setNewDocument({ ...newDocument, description: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    rows="3"
+                    placeholder="Opisz zawartość dokumentu..."
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={createDocument} 
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Utwórz
+                  </button>
+                  <button 
+                    onClick={() => setShowDocumentCreation(false)} 
+                    className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+                  >
+                    Anuluj
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (showAdminPanel) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
@@ -243,14 +624,22 @@ const ProductionVideoApp = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <button onClick={() => setShowUserCreation(true)} className="p-6 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex flex-col items-center gap-2">
-                <Users size={32} className="text-blue-600" />
+                <Users size={32} />
                 <span className="font-semibold">Utwórz użytkownika</span>
               </button>
               <button onClick={() => setShowLineCreation(true)} className="p-6 bg-green-50 rounded-lg hover:bg-green-100 transition flex flex-col items-center gap-2">
-                <FolderPlus size={32} className="text-green-600" />
-                <span className="font-semibold">Utwórz linię produkcyjną</span>
+                <FolderPlus size={32} />
+                <span className="font-semibold">Utwórz linię</span>
+              </button>
+              <button onClick={() => setShowOperatorManagement(true)} className="p-6 bg-purple-50 rounded-lg hover:bg-purple-100 transition flex flex-col items-center gap-2">
+                <Star size={32} />
+                <span className="font-semibold">Operatorzy</span>
+              </button>
+              <button onClick={() => setShowDocumentManagement(true)} className="p-6 bg-orange-50 rounded-lg hover:bg-orange-100 transition flex flex-col items-center gap-2">
+                <FileText size={32} />
+                <span className="font-semibold">Dokumenty</span>
               </button>
             </div>
 
@@ -258,6 +647,13 @@ const ProductionVideoApp = () => {
               <div className="bg-blue-50 p-4 rounded-lg mb-4">
                 <h3 className="font-semibold mb-3">Utwórz nowego użytkownika</h3>
                 <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Imię i nazwisko"
+                    value={newUser.fullName}
+                    onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
                   <input
                     type="text"
                     placeholder="Nazwa użytkownika"
@@ -502,7 +898,7 @@ const ProductionVideoApp = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Instrukcje wideo produkcyjne</h1>
-              <p className="text-gray-600">Witaj, {currentUser.username} ({currentUser.role})</p>
+              <p className="text-gray-600">Witaj, {currentUser.fullName || currentUser.username} ({currentUser.role})</p>
             </div>
             <div className="flex gap-2">
               {currentUser.role === 'admin' && (
